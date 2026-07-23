@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVC Group — Тимбилдинг в Oi-Qaragai</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #8E1638;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    background-color: #f3f4f6;
+    overflow-x: hidden;
+  }
+
+  /* ГЛАВНЫЙ БЛОК С МЯГКИМ ПАРАЛЛАКСОМ */
+  .hero-parallax {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Задний слой (горы и небо) — движется едва заметно */
+  .parallax-bg {
+    position: absolute;
+    inset: -60px; /* Запас по краям, чтобы при смещении не было белых полос */
+    background-image: url('bg-mountains.jpg.jpeg');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    will-change: transform;
+    transition: transform 0.1s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  /* Текст посередине */
+  .hero-content {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    width: 100%;
+    max-width: 650px;
+    padding: 0 20px;
+    will-change: transform;
+    transition: transform 0.1s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  .hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    text-shadow: 0 2px 16px rgba(255,255,255,0.8);
+  }
+  .hero-title span { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.2rem;
+    font-weight: 500;
+    text-shadow: 0 1px 8px rgba(255,255,255,0.8);
+  }
+
+  .btn {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.9rem 2.2rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: var(--accent);
+    color: #FFFFFF;
+    box-shadow: 0 4px 20px rgba(142, 22, 56, 0.35);
+    text-decoration: none;
+  }
+  .btn:hover { transform: translateY(-2px); opacity: 0.95; }
+
+  /* Передний план (трава) — создает глубокий объем поверх контента */
+  .parallax-fg {
+    position: absolute;
+    inset: -60px;
+    background-image: url('fg-grass.png.jpg');
+    background-size: cover;
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: 4;
+    will-change: transform;
+    transition: transform 0.1s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  /* Информационный блок ниже для проверки скролла */
+  .content-section {
+    position: relative;
+    z-index: 5;
+    background: #ffffff;
+    padding: 6rem 2rem;
+    text-align: center;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.03);
+  }
+  .content-section h2 { font-size: 2.2rem; margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .content-section p { color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.7; font-size: 1.05rem; }
+</style>
+</head>
+<body>
+
+<section class="hero-parallax">
+  <!-- Фоновый слой (горы) -->
+  <div class="parallax-bg" id="parallaxBg"></div>
+  
+  <!-- Текстовый контент -->
+  <div class="hero-content" id="parallaxContent">
+    <div class="badge">Тимбилдинг 2026</div>
+    <h1 class="hero-title">AVC Group<br><span>Oi-Qaragai</span></h1>
+    <p class="hero-sub">Синхронизация командных процессов за пределами офиса. Один день. Одна цель.</p>
+    <a href="#info" class="btn">Подробнее о выезде</a>
+  </div>
+
+  <!-- Передний слой (трава) -->
+  <div class="parallax-fg" id="parallaxFg"></div>
+</section>
+
+<section class="content-section" id="info">
+  <h2>О программе мероприятия</h2>
+  <p>Здесь будет размещена вся детальная информация о выезде, тайминг активностей, интерактивная карта курорта и полезные материалы для сотрудников.</p>
+</section>
+
+<script>
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        
+        // Эффект работает только пока первый экран в поле видимости
+        if (scrollY <= window.innerHeight) {
+          // Мягкие, сбалансированные коэффициенты для плавной анимации:
+          // 1. Фон (горы) двигается медленно назад
+          document.getElementById('parallaxBg').style.transform = `translateY(${scrollY * 0.07}px)`;
+          // 2. Контент слегка отстает для объема
+          document.getElementById('parallaxContent').style.transform = `translateY(${scrollY * 0.18}px)`;
+          // 3. Трава спереди наплывает быстрее остальных
+          document.getElementById('parallaxFg').style.transform = `translateY(${scrollY * 0.32}px)`;
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+</script>
+
+</body>
+</html>
